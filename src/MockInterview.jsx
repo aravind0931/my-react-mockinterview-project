@@ -98,6 +98,8 @@ export default function MockInterview() {
   const [loadingFeedback, setLoadingFeedback] = useState(false);
   const [timerRunning, setTimerRunning] = useState(false);
   const [answers, setAnswers] = useState([]);
+  const [error, setError] = useState("");
+
   useEffect(() => {
   const savedAnswers = localStorage.getItem("answers");
 
@@ -118,10 +120,24 @@ export default function MockInterview() {
     setAnswer("");
     setFeedback(null);
     setShowTips(false);
+    setError("");
     setTimeout(() => textareaRef.current?.focus(), 100);
   };
 
   const submitAnswer = async () => {
+    const cleanAnswer = answer.trim();
+    if (!cleanAnswer) {
+      setError("Please type your answer before submitting.");
+      return;
+    }
+
+    const lines = cleanAnswer.split('\n').filter(line => line.trim().length > 0);
+    if (cleanAnswer.length < 50 && lines.length < 2) {
+      setError("Please write at least 2 lines (or 50 characters) to submit your answer.");
+      return;
+    }
+
+    setError("");
     setTimerRunning(false);
     setPhase("review");
     setLoadingFeedback(true);
@@ -373,12 +389,33 @@ localStorage.setItem(
             <textarea
               ref={textareaRef}
               value={answer}
-              onChange={e => setAnswer(e.target.value)}
+              onChange={e => {
+                setAnswer(e.target.value);
+                if (error) setError("");
+              }}
               placeholder="Type your answer here..."
-              style={{ width: "100%", minHeight: 160, borderRadius: 14, border: "2px solid #E2E8F0", padding: 16, fontSize: 15, color: "#0F172A", resize: "vertical", outline: "none", boxSizing: "border-box", fontFamily: "inherit", lineHeight: 1.6 }}
-              onFocus={e => { e.target.style.borderColor = "#6366F1"; }}
-              onBlur={e => { e.target.style.borderColor = "#E2E8F0"; }}
+              style={{
+                width: "100%",
+                minHeight: 160,
+                borderRadius: 14,
+                border: error ? "2px solid #EF4444" : "2px solid #E2E8F0",
+                padding: 16,
+                fontSize: 15,
+                color: "#0F172A",
+                resize: "vertical",
+                outline: "none",
+                boxSizing: "border-box",
+                fontFamily: "inherit",
+                lineHeight: 1.6
+              }}
+              onFocus={e => { if (!error) e.target.style.borderColor = "#6366F1"; }}
+              onBlur={e => { if (!error) e.target.style.borderColor = "#E2E8F0"; }}
             />
+            {error && (
+              <p style={{ color: "#EF4444", fontSize: "14px", marginTop: "8px", fontWeight: "600", textAlign: "left" }}>
+                ⚠️ {error}
+              </p>
+            )}
             <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 12 }}>
               <button onClick={submitAnswer} style={{ padding: "12px 32px", background: "#0F172A", color: "#fff", border: "none", borderRadius: 12, fontSize: 15, fontWeight: 700, cursor: "pointer" }}>
                 Submit Answer
