@@ -98,6 +98,13 @@ export default function MockInterview() {
   const [loadingFeedback, setLoadingFeedback] = useState(false);
   const [timerRunning, setTimerRunning] = useState(false);
   const [answers, setAnswers] = useState([]);
+  useEffect(() => {
+  const savedAnswers = localStorage.getItem("answers");
+
+  if (savedAnswers) {
+    setAnswers(JSON.parse(savedAnswers));
+  }
+}, []);
   const [showTips, setShowTips] = useState(false);
   const textareaRef = useRef(null);
 
@@ -117,6 +124,24 @@ export default function MockInterview() {
     setTimerRunning(false);
     setPhase("review");
     setLoadingFeedback(true);
+    const updatedAnswers = [
+  ...answers,
+  {
+    question: question.question,
+    answer,
+    feedback: "Feedback unavailable"
+  }
+];
+
+setAnswers(updatedAnswers);
+
+localStorage.setItem(
+  "answers",
+  JSON.stringify(updatedAnswers)
+);
+
+nextQuestion();
+return;
 
     try {
       const resp = await fetch("https://api.anthropic.com/v1/messages", {
@@ -161,7 +186,19 @@ Respond ONLY in JSON with this exact structure (no markdown, no backticks):
   };
 
   const nextQuestion = () => {
-    setAnswers(prev => [...prev, { question: question.question, answer, feedback }]);
+    const updatedAnswers = [
+  ...answers,
+  {
+    question: question.question,
+    answer,
+    feedback
+  }
+];
+setAnswers(updatedAnswers);
+localStorage.setItem(
+  "answers",
+  JSON.stringify(updatedAnswers)
+);
     if (isLast) {
       setPhase("done");
     } else {
