@@ -106,6 +106,7 @@ export default function MockInterview() {
   }
 }, []);
   const [showTips, setShowTips] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
   const textareaRef = useRef(null);
 
   const question = QUESTIONS[currentIdx];
@@ -238,7 +239,7 @@ localStorage.setItem(
             {answers.map((a, i) => (
               <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 0", borderBottom: "1px solid #F1F5F9" }}>
                 <span style={{ color: "#475569", fontSize: 14, flex: 1, marginRight: 12, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                  Q{i + 1}: {QUESTIONS[i].question}
+                  Q{i + 1}: {a.question}
                 </span>
                 <span style={{ fontWeight: 800, color: a.feedback?.score >= 7 ? "#10B981" : a.feedback?.score >= 5 ? "#F59E0B" : "#EF4444", minWidth: 40, textAlign: "right" }}>
                   {a.feedback?.score ?? "–"}/10
@@ -246,6 +247,54 @@ localStorage.setItem(
               </div>
             ))}
           </div>
+          <div style={{ display: "flex", gap: "10px", marginBottom: "15px" }}>
+  <button
+    onClick={() => setShowHistory(!showHistory)}
+    style={{
+      flex: 1,
+      padding: "14px",
+      background: "#10B981",
+      color: "#fff",
+      border: "none",
+      borderRadius: "12px"
+    }}
+  >
+    View Saved Answers
+  </button>
+
+  <button
+    onClick={() => {
+      localStorage.removeItem("answers");
+      alert("History Cleared");
+    }}
+    style={{
+      flex: 1,
+      padding: "14px",
+      background: "#EF4444",
+      color: "#fff",
+      border: "none",
+      borderRadius: "12px"
+    }}
+  >
+    Clear History
+  </button>
+</div>
+
+{showHistory && (
+  <div style={{ textAlign: "left", marginBottom: "20px" }}>
+    <h3>Saved Answers</h3>
+
+    {(JSON.parse(localStorage.getItem("answers")) || []).map(
+      (item, index) => (
+        <div key={index}>
+          <p><b>Question:</b> {item.question}</p>
+          <p><b>Answer:</b> {item.answer}</p>
+          <hr />
+        </div>
+      )
+    )}
+  </div>
+)}
           <button onClick={restart} style={{ width: "100%", padding: "14px 24px", background: "#6366F1", color: "#fff", border: "none", borderRadius: 12, fontSize: 16, fontWeight: 700, cursor: "pointer" }}>
             Practice Again
           </button>
